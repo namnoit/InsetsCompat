@@ -2,6 +2,7 @@ package com.namnoit.insets
 
 import android.os.Bundle
 import android.view.ViewGroup
+import android.view.WindowInsetsController.BEHAVIOR_SHOW_BARS_BY_SWIPE
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.*
 import kotlinx.android.synthetic.main.activity_main.*
@@ -16,16 +17,32 @@ class MainActivity : AppCompatActivity() {
         WindowCompat.setDecorFitsSystemWindows(window, false)
         setContentView(R.layout.activity_main)
 
-        ViewCompat.setOnApplyWindowInsetsListener(root) { _, windowsInsets ->
-            currentWindowInsets = windowsInsets
-            applyInsets()
-        }
+//        ViewCompat.setOnApplyWindowInsetsListener(root) { _, windowsInsets ->
+//            currentWindowInsets = windowsInsets
+//            applyInsets()
+//        }
 
 //        currentInsetTypes.add(WindowInsetsCompat.Type.statusBars())
 //        currentInsetTypes.add(WindowInsetsCompat.Type.navigationBars())
+        currentInsetTypes.add(WindowInsetsCompat.Type.ime())
         currentInsetTypes.add(WindowInsetsCompat.Type.systemBars())
+
+        // Immersive mode
+        button.setOnClickListener {
+            // WindowInsetsController only on API 30+
+            val controller = root.windowInsetsController
+            controller?.systemBarsBehavior = BEHAVIOR_SHOW_BARS_BY_SWIPE
+            controller?.hide(WindowInsetsCompat.Type.systemBars())
+        }
+
+        val callback = InsetsAnimationCallback(root)
+        ViewCompat.setOnApplyWindowInsetsListener(root, callback)
+        root.setWindowInsetsAnimationCallback(callback)
     }
 
+    /**
+     * Apply insets using margin
+     */
     private fun applyInsets(): WindowInsetsCompat {
         val currentInsetTypeMask = currentInsetTypes.fold(0) { accumulator, type ->
             accumulator or type
